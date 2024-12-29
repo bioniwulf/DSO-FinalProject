@@ -16,6 +16,7 @@ module.exports = {
 
   scopes: [
     { name: 'jupyter' },
+    { name: 'python' },
     { name: 'article' },
     { name: 'config' },
     { name: 'doc' }
