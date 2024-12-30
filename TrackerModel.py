@@ -87,6 +87,40 @@ class TrackerModel:
             state_next_euler = state + (time_discrete * rhs_value)
             constraints_equality.append(state_next - state_next_euler)
         return constraints_equality
+    
+    def get_global_limits(self):
+        st_size = self._sym_state_vector.size()[0]
+        
+        lower_bounds = np.zeros((st_size * (self._horizon + 1), 1))
+        upper_bounds = np.zeros((st_size * (self._horizon + 1), 1))
+         
+        return (lower_bounds, upper_bounds)
+
+    def get_state_limits(self, linear_velocity: list, angular_velocity: list):
+        st_size   = self._sym_state_vector.size()[0]
+        ctrl_size = self._sym_control_vector.size()[0]
+
+        # Set the lower bound for the optimized vector (both state and control vector)
+        lower_bounds = np.zeros((st_size * (self._horizon + 1) + ctrl_size * self._horizon, 1))
+        # Fist let's fill the limit for state vector. First st_size * (self._horizon + 1) part
+        # (x, y parts)
+        lower_bounds[0:(3 * self._horizon + 1) + 0:3] = -np.inf
+        lower_bounds[1:(3 * self._horizon + 1) + 1:3] = -np.inf
+        # (\phi part)
+        lower_bounds[2:(3 * self._horizon + 1) + 2:3] = -np.inf
+        # Second let's fill the limit for control vector. Second ctrl_size * self._horizon part
+        lower_bounds[st_size * (self._horizon + 1) + 0:st_size * (self._horizon + 1) + ctrl_size * self._horizon:2] = np.min(linear_velocity)
+        lower_bounds[st_size * (self._horizon + 1) + 1:st_size * (self._horizon + 1) + ctrl_size * self._horizon:2] = np.min(angular_velocity)
+
+        # Set the upper bound for the optimized vector (both state and control vector) symmetricaly
+        upper_bounds = np.zeros((ctrl_size * self._horizon + st_size * (self._horizon + 1), 1))
+        upper_bounds[0:(3 * self._horizon + 1) + 0:3] = np.inf
+        upper_bounds[1:(3 * self._horizon + 1) + 1:3] = np.inf
+        upper_bounds[2:(3 * self._horizon + 1) + 2:3] = np.inf
+        upper_bounds[st_size * (self._horizon + 1) + 0:st_size * (self._horizon + 1) + ctrl_size * self._horizon:2] = np.max(linear_velocity)
+        upper_bounds[st_size * (self._horizon + 1) + 1:st_size * (self._horizon + 1) + ctrl_size * self._horizon:2] = np.max(angular_velocity)
+        
+        return (lower_bounds, upper_bounds)
 
     def get_state_prediction(self, step=None):
         if step is None:
