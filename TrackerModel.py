@@ -52,7 +52,7 @@ class TrackerModel:
         # Storage for control actions (2D matrix: (cumulative) x Control Vector Size)
         self._storage_control = []
 
-    def create_objective(self, weight_state: np.array, weight_control: np.array) -> SX:
+    def create_objective(self, weight_state: np.array, weight_control: np.array, weight_control_dif: np.array) -> SX:
         """
         Create objective function for MPC (only for the tracker itself).
 
@@ -88,8 +88,15 @@ class TrackerModel:
             # Target control
             target_control = self._sym_reference[step * period + st_size : step * period + st_size + ctrl_size]
             objective_fn = objective_fn + \
-                (state - target_state).T @ weight_state @ (state - target_state) + \
-                (control - target_control).T @ weight_control @ (control - target_control)
+                           (state - target_state).T @ weight_state @ (state - target_state) + \
+                           (control - target_control).T @ weight_control @ (control - target_control)
+
+            # Additional control smoothness
+            if step > 0:
+                prev_control = self._sym_prediction_control[:, step - 1]
+                objective_fn = objective_fn + \
+                    (control - prev_control).T @ weight_control_dif @ (control - prev_control)
+
         return objective_fn
 
     def create_constraints(self, time_discrete: float) -> list[SX]:
