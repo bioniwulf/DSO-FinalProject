@@ -80,6 +80,47 @@ def calculate_perpendicular_angle(point1: np.array, point2: np.array) -> float:
     angle = np.arctan2(perpendicular_vector[1], perpendicular_vector[0])
     return angle
 
+def get_proposed_state_sequence(target_state: np.array, target_velocity: float,
+                                steps: int, delta_t: float) -> np.array:
+    """
+    Propose possible target state sequence based on the current target telemetry.
+
+    We trying to propose possible target states based on assumption that
+    the linear and angular velocity of the target will be the same.
+    
+    Args:
+    ----
+        target_state (np.array): Target state (3x1: x, y, phi).
+        target_velocity (float): target velocity (2x1: linear, angular).
+        steps (int): steps of prediction.
+        delta_t (float): delta time of simulation.
+
+    Returns:
+    -------
+        list: list of proposed states and controls of the target.
+
+    """
+    state_trajectory = []
+    state_sequence = []
+
+    predicted_state = target_state.flatten()
+
+    for st in range(0, steps):
+        # Update the yaw
+        predicted_state[2] = predicted_state[2]
+        # Update the position
+        predicted_state[0] = predicted_state[0] + target_velocity * np.cos(predicted_state[2]) * delta_t
+        predicted_state[1] = predicted_state[1] + target_velocity * np.sin(predicted_state[2]) * delta_t
+
+        state_trajectory.append(np.copy(predicted_state))
+
+        # Add state vector within the prediction
+        state_sequence.append(np.copy(predicted_state))
+
+        # Add the same control vectors for each point. We assume that linear velocity the same and angular is zero
+        state_sequence.append(np.array([target_velocity, 0.0]))
+    return (state_trajectory, state_sequence)
+
 def get_trajectory_part(trajectory: TrajectoryGenerator, parameter: float,
                         steps: int, target_velocity: float, delta_t: float) -> list:
     """
