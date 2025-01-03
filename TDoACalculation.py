@@ -3,8 +3,8 @@ import numpy as np
 
 class TDoACalculation():
     
-    def __init__(self, parameter_max: float):
-        self.hyperbolic_parameters = self.hyperbolic_discretization((-parameter_max, parameter_max), 1000)
+    def __init__(self, parameter_max: float, discretization_step: int):
+        self.hyperbolic_parameters = self.hyperbolic_discretization((-parameter_max, parameter_max), discretization_step)
 
     def convert2inertial(self, T: np.array, x_series: np.array, y_series: np.array) -> list:
         # Step 1: Organize into a matrix (2 x N)
