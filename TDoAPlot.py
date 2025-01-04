@@ -42,7 +42,7 @@ class TDoAPlot:
         self.axis_hist_x.title.set_text('Time-Cumulative Solution Histogram (X-Axis)')
         self.axis_hist_y.title.set_text('Time-Cumulative Solution Histogram (Y-Axis)')
 
-        self.solution_line = self.axis_trajectory.plot([], [], label="Solution Histogram", color="green")[0]
+        self.solution_line = self.axis_trajectory.plot([], [], label="Solution Line", color="green")[0]
         self.plt_tracker_1 = self.axis_trajectory.scatter(0, 0, color="red", label=f"Tracker 1", s=20)
         self.plt_tracker_2 = self.axis_trajectory.scatter(0, 0, color="blue", label=f"Tracker 2", s=20)
             
