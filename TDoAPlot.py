@@ -1,6 +1,10 @@
 from TDoACalculation import TDoACalculation
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 import numpy as np
+
+import os
+from pathlib import Path
 
 class TDoAPlot:
     TrackerTracePointNum = 50
@@ -62,7 +66,7 @@ class TDoAPlot:
         self.axis_hist_x.set_xlabel("X coordinate, m")
         self.axis_hist_y.set_xlabel("Y coordinate, m")
 
-        self.solution_line = self.axis_trajectory.plot([], [], label="Solution Line", color="green")[0]
+        self.solution_line = self.axis_trajectory.plot([], [], label="Hyperbolic Solution Line", color="green")[0]
         self.plt_tracker_1 = self.axis_trajectory.scatter(0, 0, color="red", label=f"Tracker 1", s=20)
         self.plt_tracker_2 = self.axis_trajectory.scatter(0, 0, color="blue", label=f"Tracker 2", s=20)
 
@@ -94,16 +98,32 @@ class TDoAPlot:
         self.plt_target.set_offsets(target)
 
     def calculate_histograms(self):
-        
         data, x, y = np.histogram2d(self.data_accum_x, self.data_accum_y, 
                                     range=[[min(self.hist_range_x), max(self.hist_range_x)],
                                            [min(self.hist_range_y), max(self.hist_range_y)]],
                                     bins = [(max(self.hist_range_x) - min(self.hist_range_x)) * 1,
                                             (max(self.hist_range_y) - min(self.hist_range_y)) * 1])
 
-        self.axis_hist.imshow(data.T, interpolation = 'sinc', origin = 'lower', cmap='inferno',
-                              extent=[min(self.hist_range_x), max(self.hist_range_x),
-                                      min(self.hist_range_y), max(self.hist_range_y)])
+        self.im = self.axis_hist.imshow(data.T, interpolation = 'sinc', origin = 'lower', cmap='inferno',
+                                        extent=[min(self.hist_range_x), max(self.hist_range_x),
+                                                min(self.hist_range_y), max(self.hist_range_y)])
+
+        if self.hist2D_only:
+            return
+
+        cumulative_sum_x = np.max(data, axis=1)
+        cumulative_sum_y = np.max(data, axis=0)
+
+        self.axis_hist_x.bar(x[:-1], cumulative_sum_x, width=1, color='blue')
+        self.axis_hist_y.bar(y[:-1], cumulative_sum_y, width=1, color='blue')
+
+    def animate(self, t, animation_step):
+        print("time: ", t)
+        (TargetPosition, tracker_position_1, tracker_position_2) = animation_step(t)
+        self.add_solution(TargetPosition, tracker_position_1, tracker_position_2)
+
+        if not t % 3:
+            self.calculate_histograms()
 
         if self.hist2D_only:
             return
@@ -118,8 +138,21 @@ class TDoAPlot:
         self.plt_tracker_2_trace.set_data([elem[0] for elem in self.tracker_2_trace],
                                           [elem[1] for elem in self.tracker_2_trace])
 
-        cumulative_sum_x = np.max(data, axis=1)
-        cumulative_sum_y = np.max(data, axis=0)
+    def make_animation(self, file_path:Path, steps:int,
+                       time_interval: int, animation_step_fn):
+        if not file_path.is_file():
+            self.ani = animation.FuncAnimation(self.fig, self.animate, fargs=(animation_step_fn,),
+                                            repeat=False, frames=steps,
+                                            interval=time_interval, blit = False)
+            writer = animation.PillowWriter(fps=15,
+                                            metadata=dict(artist='Anton'),
+                                            bitrate=20000)
+            self.ani.save(file_path, writer=writer, dpi = 200)
+        return file_path
 
-        self.axis_hist_x.bar(x[:-1], cumulative_sum_x, width=1)
-        self.axis_hist_y.bar(y[:-1], cumulative_sum_y, width=1)
+    def close_plot(self):
+        plt.close(self.fig)
+
+    @property
+    def figure(self):
+        return self.fig
