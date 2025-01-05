@@ -147,7 +147,7 @@ class TDoAPlot:
             writer = animation.PillowWriter(fps=15,
                                             metadata=dict(artist='Anton'),
                                             bitrate=20000)
-            self.ani.save(file_path, writer=writer, dpi = 200)
+            self.ani.save(file_path, writer=writer, dpi = 150)
         return file_path
 
     def close_plot(self):
