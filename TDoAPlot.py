@@ -117,9 +117,9 @@ class TDoAPlot:
         self.axis_hist_x.bar(x[:-1], cumulative_sum_x, width=1, color='blue')
         self.axis_hist_y.bar(y[:-1], cumulative_sum_y, width=1, color='blue')
 
-    def animate(self, t, animation_step):
+    def animate(self, t, animation_step_fn):
         print("time: ", t)
-        (TargetPosition, tracker_position_1, tracker_position_2) = animation_step(t)
+        (TargetPosition, tracker_position_1, tracker_position_2) = animation_step_fn(t)
         self.add_solution(TargetPosition, tracker_position_1, tracker_position_2)
 
         if not t % 3:
@@ -137,6 +137,26 @@ class TDoAPlot:
                                           [elem[1] for elem in self.tracker_1_trace])
         self.plt_tracker_2_trace.set_data([elem[0] for elem in self.tracker_2_trace],
                                           [elem[1] for elem in self.tracker_2_trace])
+
+    def make_static(self, steps:int, animation_step_fn):
+        for t in range(steps):
+            (TargetPosition, tracker_position_1, tracker_position_2) = animation_step_fn(t)
+            self.add_solution(TargetPosition, tracker_position_1, tracker_position_2)
+
+            if self.hist2D_only:
+                return
+        
+            # Plot last position of trackers
+            self.plt_tracker_1.set_offsets(self.tracker_1_trace[-1])
+            self.plt_tracker_2.set_offsets(self.tracker_2_trace[-1])
+
+            # Plot last trajectory trace of trackers
+            self.plt_tracker_1_trace.set_data([elem[0] for elem in self.tracker_1_trace],
+                                            [elem[1] for elem in self.tracker_1_trace])
+            self.plt_tracker_2_trace.set_data([elem[0] for elem in self.tracker_2_trace],
+                                            [elem[1] for elem in self.tracker_2_trace])
+
+        self.calculate_histograms()
 
     def make_animation(self, file_path:Path, steps:int,
                        time_interval: int, animation_step_fn):
