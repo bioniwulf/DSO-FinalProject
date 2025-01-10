@@ -30,7 +30,7 @@ class TDoAPlot:
         self.tracker_2_trace = list()
 
         if self.hist2D_only:
-            self.fig, (self.axis_trajectory, self.axis_hist) = plt.subplots(1, 2, figsize=(12, 6))
+            self.fig, (self.axis_trajectory, self.axis_hist) = plt.subplots(1, 2, figsize=(12, 8))
             self.axis_hist.set_xlabel("X coordinate, m")
             self.axis_hist.set_ylabel("Y coordinate, m")
             self.axis_hist.set_xlim(min(self.hist_range_x), max(self.hist_range_x))
