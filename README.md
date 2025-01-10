@@ -1,6 +1,11 @@
 # DSO-FinalProject 
 This repository contains the software implementation of the final project report, the course Dynamical Systems and Optimization [Técnico Lisboa].
 
+## Online Access
+This Jupiter Notebook is available online.
+
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://githubtocolab.com/bioniwulf/DSO-FinalProject/blob/main/Notebook.ipynb)
+
 ## Requirements
 The software development was done in Ubuntu 22.04.
 VSCode was used as the Jupyter Notebook interpreter.
